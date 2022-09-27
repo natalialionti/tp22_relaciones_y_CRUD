@@ -3,6 +3,8 @@ const moment = require("moment");
 const db = require('../database/models');
 const sequelize = db.sequelize;
 const { Op } = require("sequelize");
+const {validationResult, body} = require("express-validator");
+const moviesAddValidator = require("moviesAddValidator");
 
 
 //Aqui tienen una forma de llamar a cada uno de los modelos
@@ -53,7 +55,7 @@ const moviesController = {
     },
     //Aqui dispongo las rutas para trabajar con el CRUD
     add: function (req, res) {
-        Genres.findAll({
+        db.Genre.findAll({
             order : ["name"]
         })
 
@@ -65,18 +67,30 @@ const moviesController = {
     },
 
     create: function (req,res) {
-        const {title, rating, awards, lenght, release_date, genre_id} = req.body;
-        Movies.create({
-            title : title.trim(),
-            rating,
-            awards,
-            genre_id,
-            release_date,
-            lenght
-        }).then(movie=>{
-            console.log(movie)
-            return res.redirect("/movies")
-             })
+    const errors = validationResult(req)
+       
+        if (errors.isEmpty()){
+        db.Movie.create({
+            ...req.body
+        })
+        .then(movie => {
+            return res.render("/movies/detail" + movie.id)
+        })
+        .catch(error=>console.log(error))
+
+        } else {
+            db.Genre.findAll({
+                order : ["name"]
+            })
+            .then(genres => res.render ("moviesAdd",
+                   { genres,
+                     errors: errors.mapped() 
+                }))
+
+            .catch(error=>console.log(error))         
+        }
+
+        return res.send(errors.mapped)
     },
 
     edit: function(req,res) {
@@ -87,6 +101,7 @@ const moviesController = {
                 }
         ]
         });
+
         let allGenres = Genres.findAll({ order: "name"})
         Promise.all([Movie, allGenres])
         .then(([Movies,allGenres])=>{

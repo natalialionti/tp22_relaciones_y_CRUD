@@ -23,5 +23,18 @@
         <!--Aquí debe colocar los botones de Modificar - Borrar y Listado de Películas-->
     </section>
 
+    <h4>Actores</h4>
+    <% if (movie.actors.lenght=0) { %>
+       
+        <ul>
+         <% movie.actors.forEach(movie => { %>
+         <li> <a href= "actors/detail/<%= actor.id %>"> <%= actor.first_name %>, <%= actor.last_name %>  </a> </li>
+        </ul>
+        <% }) %>
+
+        <% } else { %>
+        <p>El actor no tiene películas</p>  
+        <% } %>
+
 </body>
 </html>
